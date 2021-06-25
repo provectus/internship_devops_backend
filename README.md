@@ -2,25 +2,19 @@
 
 ## :floppy_disk: Setup - Backend
 
-* Change to `/server` directory
 * Install dependencies using `npm i`
 * Install [nodemon](https://www.npmjs.com/package/nodemon) globally if you don't already have it
 * Install [PostgreSQL](https://www.postgresql.org/) & run it (requires the password you created during installation)
-* Add postgresql database & weather API access credentials to .env file
-* Run `nodemon server` for a dev server on port 5000
+* Add postgresql database & weather API access credentials (3815f2d2474d4bf0fd7527bd628f45cb) to .env file
+* Run `start.sh` for a database migrations and dev server on port 5000
 
 
-## :computer: Code Examples - Backend
+## Environment variables
+Set postgresql url:
 
-* [Static method used](https://javascript.info/static-properties-methods) to add city to database list of cities.
+`DATABASE_URL=postgres://localhost:5432/database`
 
-```javascript
-  // callback function - if error return it to callback. If no error then return rows (empty set)
-  static insert (city, callback) {
-    db.query('INSERT INTO cities (city_name) VALUES ($1)', [city], (err, res) => {
-      if (err.error)
-        return callback(err);
-      callback(res);
-    });
-  }
-```
+set api key for access to WEATHER API:
+
+`WEATHER_API_KEY: '3815f2d2474d4bf0fd7527bd628f45cb`
+
