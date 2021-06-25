@@ -3,9 +3,13 @@ const Weather = require('../models/weather');
 const cors = require('cors');
 
 const router = express.Router();
+const FRONT = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+// use it before all route definitions
+router.use(cors({origin: `${FRONT}`}));
 
 var corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: `${FRONT}`,
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
 
