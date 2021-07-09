@@ -1,0 +1,70 @@
+##############################################################################################################
+# Title: Build images on GitHub Actions with Docker layer caching                                            #
+# Author: Barnov, A. and Kuznetsov, K.                                                                       #
+# Date: 2021                                                                                                 #                                                                                    #
+# Availability: https://evilmartians.com/chronicles/build-images-on-github-actions-with-docker-layer-caching #
+##############################################################################################################
+
+##############################################################################################################
+# Title: Github Actions workflow for merged/closed PRs                                                       #
+# Author: Brenner, M.                                                                                        #
+# Date: 2020                                                                                                 #                                                                                    #
+# Availability: https://brennerm.github.io/posts/trigger-github-actions-on-pr-close.html                     #
+##############################################################################################################
+
+
+name: Publish Docker image
+
+on:
+  pull_request:
+    types: [ "closed" ]
+
+env:
+  REGISTRY: valledeimulini
+
+jobs:
+  push_to_registry:
+    # this job will only run if the PR has been merged
+    if: github.event.pull_request.merged == true
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ github.event.repository.name }}:ci-${{ github.sha}}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
+      
+      # Temp fix
+      # https://github.com/docker/build-push-action/issues/252
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
