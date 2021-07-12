@@ -3,7 +3,7 @@ COPY package.json .
 RUN npm install
 
 FROM node:lts-slim
-RUN npm config set unsafe-perm true && npm install -g nodemon
+RUN npm install -g nodemon
 USER node
 COPY --chown=node:node --from=build ./node_modules ./node_modules
 COPY --chown=node:node . .
