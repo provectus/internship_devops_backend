@@ -1,12 +1,9 @@
-FROM centos/nodejs-10-centos7 AS build
+FROM centos/nodejs-10-centos7
 COPY package.json .
 RUN npm install
-
-FROM centos/nodejs-10-centos7
 RUN npm install -g nodemon
-USER node
-COPY --chown=node:node --from=build ./node_modules ./node_modules
-COPY --chown=node:node . .
+# COPY --from=build ./node_modules ./node_modules
+COPY . .
 EXPOSE 5000
 CMD ["sh", "start.sh"]
 
