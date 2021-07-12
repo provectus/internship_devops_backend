@@ -1,8 +1,8 @@
-FROM node:lts-slim AS build
+FROM centos/nodejs-10-centos7 AS build
 COPY package.json .
 RUN npm install
 
-FROM node:lts-slim
+FROM centos/nodejs-10-centos7
 RUN npm install -g nodemon
 USER node
 COPY --chown=node:node --from=build ./node_modules ./node_modules
