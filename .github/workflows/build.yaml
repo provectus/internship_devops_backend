@@ -26,7 +26,7 @@ env:
 jobs:
   push_to_registry:
     # this job will only run if the PR has been merged
-    # if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
     steps:
@@ -69,3 +69,26 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+  update_tag:
+    needs: ["push_to_registry"]
+    if: github.event.pull_request.merged == true
+    name: Update backend tag in helm chart
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v2
+        with:
+          repository: valle-dei-mulini/infrastructure
+          token: ${{ secrets.VALLE_TOKEN }}
+      - name: Commit changes
+        run: |
+          sed -i '/backend:/{                                                                 
+          N
+          s/  image:/  image:/
+          N
+          s/    tag:.*/    tag: "ci-${{ github.sha}}"/
+          }' charts/app/values.yaml 
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "update backend tag"
+          git push
